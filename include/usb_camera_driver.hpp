@@ -52,7 +52,7 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     cv::Mat frame;
     cv::Mat flipped_frame;
-    cv::VideoCapture cap;
+    //cv::VideoCapture cap(const std::string &url, int apiPreference);
     
     bool is_flipped;
 
@@ -70,7 +70,7 @@ private:
     std::shared_ptr<sensor_msgs::msg::Image> image_msg_;
     
     std::shared_ptr<sensor_msgs::msg::Image> ConvertFrameToMessage(cv::Mat & frame);
-    
+    std::shared_ptr<cv::VideoCapture> capture_handle_;  
     void ImageCallback();
     
 
