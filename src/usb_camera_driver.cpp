@@ -43,7 +43,7 @@ CameraDriver::CameraDriver(const rclcpp::NodeOptions &node_options) : Node("usb_
  
     const std::string gst_device = "v4l2src device=/dev/video" + std::to_string(camera_id) + " io-mode=2 ! image/jpeg";
     const std::string gst_dimensions = ",width=" + std::to_string(image_width_) + ",height=" + std::to_string(image_height_) + ", framerate=" + std::to_string(fps_) + "/1,format=MJPG";
-    const std::string gst_out = " ! queue ! jpegdec ! videoconvert ! queue ! video/x-raw,format=BGR ! queue ! appsink max_buffers=250 drop=1";
+    const std::string gst_out = " ! jpegdec ! videoconvert ! video/x-raw,format=BGR ! appsink";
 
     std::string gst_cap = gst_device + gst_dimensions + gst_out;
 
