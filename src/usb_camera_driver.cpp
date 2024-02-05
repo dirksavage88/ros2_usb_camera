@@ -34,16 +34,18 @@ namespace usb_camera_driver
 CameraDriver::CameraDriver(const rclcpp::NodeOptions &node_options) : Node("usb_camera_driver", node_options)
 {
 
-    const std::string gst_string = "v4l2src device=/dev/video0 io-mode=2 ! image/jpeg, width=640, height=240, framereate=30/1 ! jpegdec ! videoconvert ! video/x-raw,format=BGR ! appsink";
-
-
     frame_id_ = this->declare_parameter("frame_id", "camera");
-
-    image_width_ = this->declare_parameter("image_width", 640);
-    image_height_ = this->declare_parameter("image_height", 240);
-    fps_ = this->declare_parameter("fps", 30.0);
-
     camera_id = this->declare_parameter("camera_id", 0);
+    
+    image_width_ = this->declare_parameter("image_width", 2560);
+    image_height_ = this->declare_parameter("image_height", 720);
+    fps_ = this->declare_parameter("fps", 60);
+ 
+    const std::string gst_device = "v4l2src device=/dev/video" + std::to_string(camera_id) + " io-mode=2 ! image/jpeg";
+    const std::string gst_dimensions = ",width=" + std::to_string(image_width_) + ",height=" + std::to_string(image_height_) + ", framerate=" + std::to_string(fps_) + "/1,format=MJPG";
+    const std::string gst_out = " ! queue ! jpegdec ! videoconvert ! queue ! video/x-raw,format=BGR ! queue ! appsink max_buffers=250 drop=1";
+
+    std::string gst_cap = gst_device + gst_dimensions + gst_out;
 
     rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_system_default;
     camera_info_pub_ = image_transport::create_camera_publisher(this, "image_raw", custom_qos_profile);
@@ -54,9 +56,7 @@ CameraDriver::CameraDriver(const rclcpp::NodeOptions &node_options) : Node("usb_
     auto camera_calibration_file_param_ = this->declare_parameter("camera_calibration_file", "file://config/camera.yaml");
     cinfo_manager_->loadCameraInfo(camera_calibration_file_param_);
     
-    //cv::VideoCapture cap(gst_string, cv::CAP_GSTREAMER);
-    
-    capture_handle_ = std::make_shared<cv::VideoCapture>(gst_string, cv::CAP_GSTREAMER);
+    capture_handle_ = std::make_shared<cv::VideoCapture>(gst_cap, cv::CAP_GSTREAMER);
     
     if (!capture_handle_->isOpened()) {
 	    RCLCPP_INFO(this->get_logger(), "Capture error");
@@ -65,11 +65,6 @@ CameraDriver::CameraDriver(const rclcpp::NodeOptions &node_options) : Node("usb_
     
 	    RCLCPP_INFO(this->get_logger(), "Capture started!");
     }
-
-
-    //cap.open(camera_id);
-    //image_width_ = 640;
-    //image_height_ = 240;
 
     last_frame_ = std::chrono::steady_clock::now();
 

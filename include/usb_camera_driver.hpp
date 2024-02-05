@@ -52,14 +52,13 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     cv::Mat frame;
     cv::Mat flipped_frame;
-    //cv::VideoCapture cap(const std::string &url, int apiPreference);
     
     bool is_flipped;
 
     std::string frame_id_;
     int image_height_;
     int image_width_;
-    double fps_;
+    int fps_;
     int camera_id;
 
     std::chrono::steady_clock::time_point last_frame_;
